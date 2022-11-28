@@ -1,6 +1,6 @@
 ## Introduction
 <p align="justify">
-This repository contains all the programs that you have to use as a starting point for the GPU-101 Projects.
+This repository contains all the programs that you have to use as a starting point for the GPU-101 Projects SYMGS.
 </p>
 
 ## Usage
