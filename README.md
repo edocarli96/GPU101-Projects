@@ -22,12 +22,3 @@ https://www.dropbox.com/s/5n43vqrtm1meed1/kmer_V2a.mtx?dl=0
 
 You can fork this repo and use this as a starting point for your project.
 Remember to include all your source code as well as a PDF (4/5 pages) with your project report in the repository.
-Please DO NOT send me your repository, instead write the address of your repo in this shared google drive:
-
-https://docs.google.com/spreadsheets/d/14sAdNkW2cGFkbGSs7X1Nzru4U0QvoxK1QYq7gB6e2pk/edit?usp=sharing
-
-For the sake of convenience here is also the file containing the assigned project for all the partecipants to GPU-101: 
-
-https://docs.google.com/spreadsheets/d/1FuVhxWxUPu5AtFw8xdbQEwp-se8vmi1xHnbswostcLs/edit?usp=sharing
-
-NOTE: you cannot change your assigned project, and copying each others project will be considered cheating and will result in you not passing the course.
