@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <cura_runtime.h>
 
 double get_time() // function to get the time of day in seconds
 {
@@ -14,6 +15,7 @@ double get_time() // function to get the time of day in seconds
 // Reads a sparse matrix and represents it using CSR (Compressed Sparse Row) format
 void read_matrix(int **row_ptr, int **col_ind, float **values, float **matrixDiagonal, const char *filename, int *num_rows, int *num_cols, int *num_vals)
 {
+    //verify if the file can be opened
     int err;
     FILE *file = fopen(filename, "r");
     if (file == NULL)
@@ -29,6 +31,7 @@ void read_matrix(int **row_ptr, int **col_ind, float **values, float **matrixDia
     int *col_ind_t = (int *)malloc(*num_vals * sizeof(int));
     float *values_t = (float *)malloc(*num_vals * sizeof(float));
     float *matrixDiagonal_t = (float *)malloc(*num_rows * sizeof(float));
+
     // Collect occurances of each row for determining the indices of row_ptr
     int *row_occurances = (int *)malloc(*num_rows * sizeof(int));
     for (int i = 0; i < *num_rows; i++)
@@ -135,6 +138,14 @@ void symgs_csr_sw(const int *row_ptr, const int *col_ind, const float *values, c
     }
 }
 
+// GPU implementation of SYMGS
+__global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *x, float *matrixDiagonal)
+{
+    int i = threadIdx.x;
+
+}
+
+
 int main(int argc, const char *argv[])
 {
 
@@ -150,7 +161,7 @@ int main(int argc, const char *argv[])
 
     const char *filename = argv[1];
 
-    double start_cpu, end_cpu;
+    double start_cpu, end_cpu, start_gpu, end_gpu;
 
     read_matrix(&row_ptr, &col_ind, &values, &matrixDiagonal, filename, &num_rows, &num_cols, &num_vals);
     float *x = (float *)malloc(num_rows * sizeof(float));
@@ -166,8 +177,14 @@ int main(int argc, const char *argv[])
     symgs_csr_sw(row_ptr, col_ind, values, num_rows, x, matrixDiagonal);
     end_cpu = get_time();
 
+    // Compute in GPU
+    start_gpu = get_time();
+    symgsGPU(row_ptr, col_ind, values, num_rows, x, matrixDiagonal);
+    end_gpu = get_time();
+
     // Print time
     printf("SYMGS Time CPU: %.10lf\n", end_cpu - start_cpu);
+    printf("SYMGS Time CPU: %.10lf\n", end_gpu - start_gpu);
 
     // Free
     free(row_ptr);
