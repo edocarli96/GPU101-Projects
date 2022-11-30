@@ -141,7 +141,29 @@ void symgs_csr_sw(const int *row_ptr, const int *col_ind, const float *values, c
 // GPU implementation of SYMGS
 __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *x, float *matrixDiagonal)
 {
-    int i = threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+
+    //forward sweep
+    //cpu code that must be modified and optimized
+    for (int i = 0; i < num_rows; i++)
+    {
+        float sum = x[i];
+        const int row_start = row_ptr[i];
+        const int row_end = row_ptr[i + 1];
+        float currentDiagonal = matrixDiagonal[i]; // Current diagonal value
+
+        for (int j = row_start; j < row_end; j++)
+        {
+            sum -= values[j] * x[col_ind[j]];
+        }
+
+        sum += x[i] * currentDiagonal; // Remove diagonal contribution from previous loop
+
+        x[i] = sum / currentDiagonal;
+    }
+
+    //back sweep
 
 }
 
@@ -179,7 +201,12 @@ int main(int argc, const char *argv[])
 
     // Compute in GPU
     start_gpu = get_time();
-    symgsGPU(row_ptr, col_ind, values, num_rows, x, matrixDiagonal);
+    // kernel invocation
+    //inputs to move from RAM to VRAM (row_ptr, col_ind, values, num_rows, x, matrixDiagonal)
+    symgsGPU<<<N,N>>>(vector,matrix,x);
+    
+    //copy back data from VRAM to RAM
+
     end_gpu = get_time();
 
     // Print time
