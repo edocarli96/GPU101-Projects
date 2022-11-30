@@ -15,7 +15,7 @@ make
 Within the scope of this folder.
 Note that the examples are all compiled using the -O3 flag, you have to use this flag also when compiling the GPU version of the code using nvcc.
 All the parameters regarding input settings CANNOT BE CHANGED.
-The smith-waterman algorithm is the only one that generates all the inputs at runtime, while for symgs and spmv you should also use a sparse matrix as input (the program will not run without it).
+For symgs you should use a sparse matrix as input (the program will not run without it).
 The one you should use for all of your comparisons has already been prepared for you and is available here:
 
 https://www.dropbox.com/s/5n43vqrtm1meed1/kmer_V2a.mtx?dl=0
