@@ -225,10 +225,10 @@ int main(int argc, const char *argv[])
     printf("SYMGS Time CPU: %.10lf\n", end_gpu - start_gpu);
 
     // Free
-    free(row_ptr);
-    free(col_ind);
-    free(values);
-    free(matrixDiagonal);
+    cudaFree(row_ptr);
+    cudaFree(col_ind);
+    cudaFree(values);
+    cudaFree(matrixDiagonal);
 
     return 0;
 }
