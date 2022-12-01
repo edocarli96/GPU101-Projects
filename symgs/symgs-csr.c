@@ -27,10 +27,12 @@ void read_matrix(int **row_ptr, int **col_ind, float **values, float **matrixDia
     if(fscanf(file, "%d %d %d\n", num_rows, num_cols, num_vals)==EOF)
         printf("Error reading file");
 
-    int *row_ptr_t = (int *)malloc((*num_rows + 1) * sizeof(int));
-    int *col_ind_t = (int *)malloc(*num_vals * sizeof(int));
-    float *values_t = (float *)malloc(*num_vals * sizeof(float));
-    float *matrixDiagonal_t = (float *)malloc(*num_rows * sizeof(float));
+    int *row_ptr_t, *col_ind_t;
+    float *values_t, *matrixDiagonal_t;
+    cudaMallocManaged(&row_ptr_t ,(*num_rows + 1) * sizeof(int));
+    cudaMallocManaged(&col_ind_t ,(*num_vals * sizeof(int)));
+    cudaMallocManaged(&values_t ,(*num_vals * sizeof(float)));
+    cudaMallocManaged(&matrixDiagonal_t ,(*num_rows * sizeof(float)));
 
     // Collect occurances of each row for determining the indices of row_ptr
     int *row_occurances = (int *)malloc(*num_rows * sizeof(int));
