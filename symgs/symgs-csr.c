@@ -201,9 +201,18 @@ int main(int argc, const char *argv[])
 
     // Compute in GPU
     start_gpu = get_time();
-    // kernel invocation
+
+    //GPU memory allocation
+
+    
     //inputs to move from RAM to VRAM (row_ptr, col_ind, values, num_rows, x, matrixDiagonal)
-    symgsGPU<<<N,N>>>(vector,matrix,x);
+
+    // kernel invocation
+
+    //actually gpu function launch
+    dim3 threadsPerBlock(N, N);
+    dim3 numBlocks(N / threadsPerBlock.x, N / threadsPerBlock.y);
+    symgsGPU<<<N,N>>>(threadsPerBlock, numBlocks);
     
     //copy back data from VRAM to RAM
 
