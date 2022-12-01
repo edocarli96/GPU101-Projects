@@ -214,7 +214,7 @@ int main(int argc, const char *argv[])
     //actually gpu function launch
     dim3 threadsPerBlock(N, N);
     dim3 numBlocks(N / threadsPerBlock.x, N / threadsPerBlock.y);
-    symgsGPU<<<N,N>>>(threadsPerBlock, numBlocks);
+    symgsGPU<<<threadsPerBlock, numBlocks>>>(row_ptr, col_ind, value, matrixDiagonal);
     
     //copy back data from VRAM to RAM
 
