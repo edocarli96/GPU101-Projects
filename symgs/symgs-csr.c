@@ -208,7 +208,7 @@ int main(int argc, const char *argv[])
     int h_row_ptr[num_rows+1], h_col_ind[num_vals];
     float h_values[num_vals], h_matrixDiagonal[num_rows];
     cudaMemcpy(row_ptr, h_row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(col_ind, h_cols_ind, num_vals*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(col_ind, h_col_ind, num_vals*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(values, h_values, num_vals*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(matrixDiagonal, h_matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
     
