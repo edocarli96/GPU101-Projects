@@ -146,7 +146,6 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
-    //forward sweep
     //cpu code that must be modified and optimized
     if (i<N)
     {
@@ -155,16 +154,10 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
         const int row_end = row_ptr[i + 1];
         float currentDiagonal = matrixDiagonal[i]; // Current diagonal value
 
-        for (int j = row_start; j < row_end; j++)
-        {
-            sum -= values[j] * x[col_ind[j]];
-        }
-
-        sum += x[i] * currentDiagonal; // Remove diagonal contribution from previous loop
-
-        x[i] = sum / currentDiagonal;
+        //Jacobi method
+        x[i]=(b[i]-sum)/a[i][i];
+        sum=a[i][j]*x[j];
     }
-    //back sweep
 
 }
 
@@ -210,17 +203,18 @@ int main(int argc, const char *argv[])
     float d_values[num_vals], d_matrixDiagonal[num_rows];
     cudaMemcpy(d_row_ptr, row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_col_ind, col_ind, num_vals*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_values, values,num_vals*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_values, values, num_vals*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
     
     // kernel invocation
     dim3 threadsPerBlock(N, N);
     dim3 numBlocks(N / threadsPerBlock.x, N / threadsPerBlock.y);
     symgsGPU<<<threadsPerBlock, numBlocks>>>(d_row_ptr, d_col_ind, d_values, d_matrixDiagonal);
+    cudaDeviceSynchronize();
     
     //copy back data from VRAM to RAM
     cudaMemcpy(row_ptr, d_row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyDeviceToHost);
-    cudaMemcpy(col_ind,d_col_ind,  num_vals*sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(col_ind, d_col_ind, num_vals*sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(values, d_values, num_vals*sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(matrixDiagonal, d_matrixDiagonal, num_rows*sizeof(int), cudaMemcpyDeviceToHost);
 
