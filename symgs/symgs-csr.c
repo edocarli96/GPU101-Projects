@@ -148,7 +148,7 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
 
     //forward sweep
     //cpu code that must be modified and optimized
-    for (int i = 0; i < num_rows; i++)
+    if (i<N)
     {
         float sum = x[i];
         const int row_start = row_ptr[i];
@@ -164,7 +164,6 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
 
         x[i] = sum / currentDiagonal;
     }
-
     //back sweep
 
 }
@@ -201,14 +200,18 @@ int main(int argc, const char *argv[])
     symgs_csr_sw(row_ptr, col_ind, values, num_rows, x, matrixDiagonal);
     end_cpu = get_time();
 
+
     // Compute in GPU
     start_gpu = get_time();
-
-    //GPU memory allocation
-
     
     //inputs to move from RAM to VRAM (row_ptr, col_ind, values, num_rows, x, matrixDiagonal)
-
+    int h_row_ptr[num_rows+1], h_col_ind[num_vals];
+    float h_values[num_vals], h_matrixDiagonal[num_rows];
+    cudaMemcpy(row_ptr, h_row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(row_ptr, h_cols_ptr, num_vals*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(row_ptr, h_values, num_vals*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(row_ptr, h_matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
+    
     // kernel invocation
 
     //actually gpu function launch
