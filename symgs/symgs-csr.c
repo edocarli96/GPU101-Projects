@@ -27,6 +27,13 @@ void read_matrix(int **row_ptr, int **col_ind, float **values, float **matrixDia
     if(fscanf(file, "%d %d %d\n", num_rows, num_cols, num_vals)==EOF)
         printf("Error reading file");
 
+    // host memory allocation
+    int *row_ptr_t = (int *)malloc((*num_rows + 1) * sizeof(int));
+    int *col_ind_t = (int *)malloc(*num_vals * sizeof(int));
+    float *values_t = (float *)malloc(*num_vals * sizeof(float));
+    float *matrixDiagonal_t = (float *)malloc(*num_rows * sizeof(float));
+
+    // device memory allocation
     int *row_ptr_t, *col_ind_t;
     float *values_t, *matrixDiagonal_t;
     cudaMallocManaged(&row_ptr_t ,(*num_rows + 1) * sizeof(int));
@@ -141,22 +148,16 @@ void symgs_csr_sw(const int *row_ptr, const int *col_ind, const float *values, c
 }
 
 // GPU implementation of SYMGS
-__global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *x, float *matrixDiagonal)
+__global__ void symgsGPU(float A[N][N], float X[N], float b[N])
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
-    //cpu code that must be modified and optimized
     if (i<N)
     {
-        float sum = x[i];
-        const int row_start = row_ptr[i];
-        const int row_end = row_ptr[i + 1];
-        float currentDiagonal = matrixDiagonal[i]; // Current diagonal value
-
         //Jacobi method
-        x[i]=(b[i]-sum)/a[i][i];
-        sum=a[i][j]*x[j];
+        X[i]=(b[i]-sum)/A[i][i];
+        sum=A[i][j]*X[j];
     }
 
 }
@@ -224,7 +225,14 @@ int main(int argc, const char *argv[])
     printf("SYMGS Time CPU: %.10lf\n", end_cpu - start_cpu);
     printf("SYMGS Time CPU: %.10lf\n", end_gpu - start_gpu);
 
-    // Free
+ // Free host memory
+    free(row_ptr);
+    free(col_ind);
+    free(values);
+    free(matrixDiagonal);
+
+
+    // Free device memory
     cudaFree(row_ptr);
     cudaFree(col_ind);
     cudaFree(values);
