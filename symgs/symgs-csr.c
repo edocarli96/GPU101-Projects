@@ -204,13 +204,14 @@ int main(int argc, const char *argv[])
     // Compute in GPU
     start_gpu = get_time();
     
-    //inputs to move from RAM to VRAM (row_ptr, col_ind, values, num_rows, x, matrixDiagonal)
-    int h_row_ptr[num_rows+1], h_col_ind[num_vals];
-    float h_values[num_vals], h_matrixDiagonal[num_rows];
-    cudaMemcpy(row_ptr, h_row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(col_ind, h_col_ind, num_vals*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(values, h_values, num_vals*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(matrixDiagonal, h_matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
+    // inputs to move from RAM to VRAM (row_ptr, col_ind, values, num_rows, x, matrixDiagonal)
+    // device=GPU
+    int d_row_ptr[num_rows+1], d_col_ind[num_vals];
+    float d_values[num_vals], d_matrixDiagonal[num_rows];
+    cudaMemcpy(d_row_ptr, row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_col_ind, col_ind, num_vals*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy( d_values, values,num_vals*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy( d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
     
     // kernel invocation
 
