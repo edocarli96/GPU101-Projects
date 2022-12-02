@@ -210,8 +210,8 @@ int main(int argc, const char *argv[])
     float d_values[num_vals], d_matrixDiagonal[num_rows];
     cudaMemcpy(d_row_ptr, row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_col_ind, col_ind, num_vals*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy( d_values, values,num_vals*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy( d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_values, values,num_vals*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
     
     // kernel invocation
     dim3 threadsPerBlock(N, N);
@@ -219,6 +219,10 @@ int main(int argc, const char *argv[])
     symgsGPU<<<threadsPerBlock, numBlocks>>>(d_row_ptr, d_col_ind, d_values, d_matrixDiagonal);
     
     //copy back data from VRAM to RAM
+    cudaMemcpy(row_ptr, d_row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(col_ind,d_col_ind,  num_vals*sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(values, d_values, num_vals*sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(matrixDiagonal, d_matrixDiagonal, num_rows*sizeof(int), cudaMemcpyDeviceToHost);
 
     end_gpu = get_time();
 
