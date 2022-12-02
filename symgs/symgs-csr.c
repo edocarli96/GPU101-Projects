@@ -214,11 +214,9 @@ int main(int argc, const char *argv[])
     cudaMemcpy( d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
     
     // kernel invocation
-
-    //actually gpu function launch
     dim3 threadsPerBlock(N, N);
     dim3 numBlocks(N / threadsPerBlock.x, N / threadsPerBlock.y);
-    symgsGPU<<<threadsPerBlock, numBlocks>>>(row_ptr, col_ind, value, matrixDiagonal);
+    symgsGPU<<<threadsPerBlock, numBlocks>>>(d_row_ptr, d_col_ind, d_values, d_matrixDiagonal);
     
     //copy back data from VRAM to RAM
 
