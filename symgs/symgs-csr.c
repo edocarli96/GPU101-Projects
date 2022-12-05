@@ -33,14 +33,6 @@ void read_matrix(int **row_ptr, int **col_ind, float **values, float **matrixDia
     float *values_t = (float *)malloc(*num_vals * sizeof(float));
     float *matrixDiagonal_t = (float *)malloc(*num_rows * sizeof(float));
 
-    // device memory allocation
-    int *d_row_ptr, *d_col_ind;
-    float *d_values, *d_matrixDiagonal;
-    cudaMallocManaged(&d_row_ptr ,(*num_rows + 1) * sizeof(int));
-    cudaMallocManaged(&d_col_ind ,(*num_vals * sizeof(int)));
-    cudaMallocManaged(&d_values ,(*num_vals * sizeof(float)));
-    cudaMallocManaged(&d_matrixDiagonal ,(*num_rows * sizeof(float)));
-
     // Collect occurances of each row for determining the indices of row_ptr
     int *row_occurances = (int *)malloc(*num_rows * sizeof(int));
     for (int i = 0; i < *num_rows; i++)
@@ -50,6 +42,7 @@ void read_matrix(int **row_ptr, int **col_ind, float **values, float **matrixDia
 
     int row, column;
     float value;
+    // finds all occurances per row and counts them
     while (fscanf(file, "%d %d %f\n", &row, &column, &value) != EOF)
     {
         // Subtract 1 from row and column indices to match C format
@@ -194,10 +187,15 @@ int main(int argc, const char *argv[])
     symgs_csr_sw(row_ptr, col_ind, values, num_rows, x, matrixDiagonal);
     end_cpu = get_time();
 
-
-    // Compute in GPU
-    start_gpu = get_time();
     
+    // device memory allocation
+    int *d_row_ptr, *d_col_ind;
+    float *d_values, *d_matrixDiagonal;
+    cudaMallocManaged(&d_row_ptr ,(*num_rows + 1) * sizeof(int));
+    cudaMallocManaged(&d_col_ind ,(*num_vals * sizeof(int)));
+    cudaMallocManaged(&d_values ,(*num_vals * sizeof(float)));
+    cudaMallocManaged(&d_matrixDiagonal ,(*num_rows * sizeof(float)));
+
     // inputs to move from RAM to VRAM
     // device=GPU
     int d_row_ptr[num_rows+1], d_col_ind[num_vals];
@@ -207,19 +205,19 @@ int main(int argc, const char *argv[])
     cudaMemcpy(d_values, values, num_vals*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
     
+
+    // Compute in GPU
+    start_gpu = get_time();
     // kernel invocation
     dim3 threadsPerBlock(256);
     dim3 numBlocks(N / threadsPerBlock.x, N / threadsPerBlock.y);
     symgsGPU<<<threadsPerBlock, numBlocks>>>(d_row_ptr, d_col_ind, d_values, num_rows, x, d_matrixDiagonal);
     cudaDeviceSynchronize();
-    
+    end_gpu = get_time();
+
     //copy back data from VRAM to RAM
     cudaMemcpy(row_ptr, d_row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyDeviceToHost);
-    cudaMemcpy(col_ind, d_col_ind, num_vals*sizeof(int), cudaMemcpyDeviceToHost);
-    cudaMemcpy(values, d_values, num_vals*sizeof(int), cudaMemcpyDeviceToHost);
-    cudaMemcpy(matrixDiagonal, d_matrixDiagonal, num_rows*sizeof(int), cudaMemcpyDeviceToHost);
 
-    end_gpu = get_time();
 
     // Print time
     printf("SYMGS Time CPU: %.10lf\n", end_cpu - start_cpu);
@@ -233,10 +231,10 @@ int main(int argc, const char *argv[])
 
 
     // Free device memory
-    cudaFree(row_ptr);
-    cudaFree(col_ind);
-    cudaFree(values);
-    cudaFree(matrixDiagonal);
+    cudaFree(d_row_ptr);
+    cudaFree(d_col_ind);
+    cudaFree(d_values);
+    cudaFree(d_matrixDiagonal);
 
     return 0;
 }
