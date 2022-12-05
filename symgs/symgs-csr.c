@@ -190,11 +190,14 @@ int main(int argc, const char *argv[])
     
     // device memory allocation
     int *d_row_ptr, *d_col_ind;
-    float *d_values, *d_matrixDiagonal;
+    float *d_values, *d_matrixDiagonal, *d_x;
     cudaMallocManaged(&d_row_ptr ,(*num_rows + 1) * sizeof(int));
     cudaMallocManaged(&d_col_ind ,(*num_vals * sizeof(int)));
     cudaMallocManaged(&d_values ,(*num_vals * sizeof(float)));
     cudaMallocManaged(&d_matrixDiagonal ,(*num_rows * sizeof(float)));
+    cudaMallocManaged(&d_x ,(*num_rows * sizeof(float)));
+    // vector where to store gpu compilation results
+    float *h_x = (float *)malloc(num_rows * sizeof(float));
 
     // inputs to move from RAM to VRAM
     // device=GPU
@@ -202,8 +205,10 @@ int main(int argc, const char *argv[])
     float d_values[num_vals], d_matrixDiagonal[num_rows];
     cudaMemcpy(d_row_ptr, row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_col_ind, col_ind, num_vals*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_values, values, num_vals*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_values, values, num_vals*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(float), cudaMemcpyHostToDevice);
+    // copy solution array
+    cudaMemcpy(d_x, x, num_vals*sizeof(float), cudaMemcpyHostToDevice);
     
 
     // Compute in GPU
@@ -211,12 +216,12 @@ int main(int argc, const char *argv[])
     // kernel invocation
     dim3 threadsPerBlock(256);
     dim3 numBlocks(N / threadsPerBlock.x, N / threadsPerBlock.y);
-    symgsGPU<<<threadsPerBlock, numBlocks>>>(d_row_ptr, d_col_ind, d_values, num_rows, x, d_matrixDiagonal);
+    symgsGPU<<<threadsPerBlock, numBlocks>>>(d_row_ptr, d_col_ind, d_values, num_rows, d_x, d_matrixDiagonal);
     cudaDeviceSynchronize();
     end_gpu = get_time();
 
     //copy back data from VRAM to RAM
-    cudaMemcpy(row_ptr, d_row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_x, d_x, (num_rows+1)*sizeof(int), cudaMemcpyDeviceToHost);
 
 
     // Print time
@@ -228,6 +233,7 @@ int main(int argc, const char *argv[])
     free(col_ind);
     free(values);
     free(matrixDiagonal);
+    free(h_x);
 
 
     // Free device memory
@@ -235,6 +241,7 @@ int main(int argc, const char *argv[])
     cudaFree(d_col_ind);
     cudaFree(d_values);
     cudaFree(d_matrixDiagonal);
+    cudaFree(d_x);
 
     return 0;
 }
