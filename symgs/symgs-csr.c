@@ -34,12 +34,12 @@ void read_matrix(int **row_ptr, int **col_ind, float **values, float **matrixDia
     float *matrixDiagonal_t = (float *)malloc(*num_rows * sizeof(float));
 
     // device memory allocation
-    int *row_ptr_t, *col_ind_t;
-    float *values_t, *matrixDiagonal_t;
-    cudaMallocManaged(&row_ptr_t ,(*num_rows + 1) * sizeof(int));
-    cudaMallocManaged(&col_ind_t ,(*num_vals * sizeof(int)));
-    cudaMallocManaged(&values_t ,(*num_vals * sizeof(float)));
-    cudaMallocManaged(&matrixDiagonal_t ,(*num_rows * sizeof(float)));
+    int *d_row_ptr, *d_col_ind;
+    float *d_values, *d_matrixDiagonal;
+    cudaMallocManaged(&d_row_ptr ,(*num_rows + 1) * sizeof(int));
+    cudaMallocManaged(&d_col_ind ,(*num_vals * sizeof(int)));
+    cudaMallocManaged(&d_values ,(*num_vals * sizeof(float)));
+    cudaMallocManaged(&d_matrixDiagonal ,(*num_rows * sizeof(float)));
 
     // Collect occurances of each row for determining the indices of row_ptr
     int *row_occurances = (int *)malloc(*num_rows * sizeof(int));
@@ -148,7 +148,7 @@ void symgs_csr_sw(const int *row_ptr, const int *col_ind, const float *values, c
 }
 
 // GPU implementation of SYMGS
-__global__ void symgsGPU(float A[N][N], float X[N], float b[N])
+__global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *x, float *matrixDiagonal)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
@@ -198,7 +198,7 @@ int main(int argc, const char *argv[])
     // Compute in GPU
     start_gpu = get_time();
     
-    // inputs to move from RAM to VRAM (row_ptr, col_ind, values, num_rows, x, matrixDiagonal)
+    // inputs to move from RAM to VRAM
     // device=GPU
     int d_row_ptr[num_rows+1], d_col_ind[num_vals];
     float d_values[num_vals], d_matrixDiagonal[num_rows];
@@ -208,9 +208,9 @@ int main(int argc, const char *argv[])
     cudaMemcpy(d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(int), cudaMemcpyHostToDevice);
     
     // kernel invocation
-    dim3 threadsPerBlock(N, N);
+    dim3 threadsPerBlock(256);
     dim3 numBlocks(N / threadsPerBlock.x, N / threadsPerBlock.y);
-    symgsGPU<<<threadsPerBlock, numBlocks>>>(d_row_ptr, d_col_ind, d_values, d_matrixDiagonal);
+    symgsGPU<<<threadsPerBlock, numBlocks>>>(d_row_ptr, d_col_ind, d_values, num_rows, x, d_matrixDiagonal);
     cudaDeviceSynchronize();
     
     //copy back data from VRAM to RAM
