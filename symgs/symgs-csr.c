@@ -103,7 +103,6 @@ void read_matrix(int **row_ptr, int **col_ind, float **values, float **matrixDia
 // CPU implementation of SYMGS using CSR, DO NOT CHANGE THIS
 void symgs_csr_sw(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *x, float *matrixDiagonal)
 {
-
     // forward sweep
     for (int i = 0; i < num_rows; i++)
     {
@@ -146,11 +145,12 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if (i<N)
+    if (i<num_rows-1)
     {
         //Jacobi method
-        X[i]=(b[i]-sum)/A[i][i];
-        sum=A[i][j]*X[j];
+        /*X[i]=(b[i]-sum)/A[i][i];
+        sum=A[i][j]*X[j];*/
+
     }
 
 }
@@ -190,14 +190,14 @@ int main(int argc, const char *argv[])
     
     // device memory allocation
     int *d_row_ptr, *d_col_ind;
-    float *d_values, *d_matrixDiagonal, *d_x;
+    float *d_values, *d_matrixDiagonal, *d_x, *h_x;
     cudaMallocManaged(&d_row_ptr ,(*num_rows + 1) * sizeof(int));
     cudaMallocManaged(&d_col_ind ,(*num_vals * sizeof(int)));
     cudaMallocManaged(&d_values ,(*num_vals * sizeof(float)));
     cudaMallocManaged(&d_matrixDiagonal ,(*num_rows * sizeof(float)));
     cudaMallocManaged(&d_x ,(*num_rows * sizeof(float)));
     // vector where to store gpu compilation results
-    float *h_x = (float *)malloc(num_rows * sizeof(float));
+    h_x = (float *)malloc(num_rows * sizeof(float));
 
     // inputs to move from RAM to VRAM
     // device=GPU
