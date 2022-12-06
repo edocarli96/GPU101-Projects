@@ -140,17 +140,20 @@ void symgs_csr_sw(const int *row_ptr, const int *col_ind, const float *values, c
 }
 
 // GPU implementation of SYMGS
-__global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *x, float *matrixDiagonal)
+__global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *b, float *matrixDiagonal)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
+    float sol[num_rows];
+    float sum=0;
 
     if (i<num_rows-1)
     {
         //Jacobi method
         /*X[i]=(b[i]-sum)/A[i][i];
         sum=A[i][j]*X[j];*/
-
+        sol[i]=(b[i]-sum)/matrixDiagonal[i];
+        sum=values[i]*sol[i];
     }
 
 }
