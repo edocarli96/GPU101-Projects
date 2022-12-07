@@ -152,8 +152,9 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
         //Jacobi method
         /*X[i]=(b[i]-sum)/A[i][i];
         sum=A[i][j]*X[j];*/
+        if (i!=j) // avoid diagonal elements
+            sum += values[i] * sol[i];
         sol[i]=(b[i]-sum)/matrixDiagonal[i];
-        sum=values[i]*sol[i];
     }
 
 }
