@@ -178,12 +178,16 @@ int main(int argc, const char *argv[])
 
     read_matrix(&row_ptr, &col_ind, &values, &matrixDiagonal, filename, &num_rows, &num_cols, &num_vals);
     float *x = (float *)malloc(num_rows * sizeof(float));
+    // vector copy of x for the gpu
+    float *h_x = (float *)malloc(num_rows * sizeof(float));
 
     // Generate a random vector
     srand(time(NULL));
     for (int i = 0; i < num_rows; i++)
     {
         x[i] = (rand() % 100) / (rand() % 100 + 1); // the number we use to divide cannot be 0, that's the reason of the +1
+        // copi x into h_x
+        h_x[i] = x[i];
     }
     // Compute in sw
     start_cpu = get_time();
@@ -200,7 +204,7 @@ int main(int argc, const char *argv[])
     cudaMallocManaged(&d_matrixDiagonal ,(*num_rows * sizeof(float)));
     cudaMallocManaged(&d_x ,(*num_rows * sizeof(float)));
     // vector where to store gpu compilation results
-    h_x = (float *)malloc(num_rows * sizeof(float));
+    // h_b = (float *)malloc(num_rows * sizeof(float));
 
     // inputs to move from RAM to VRAM
     // device=GPU
@@ -211,7 +215,7 @@ int main(int argc, const char *argv[])
     cudaMemcpy(d_values, values, num_vals*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_matrixDiagonal, matrixDiagonal, num_rows*sizeof(float), cudaMemcpyHostToDevice);
     // copy solution array
-    cudaMemcpy(d_x, x, num_vals*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_x, h_x, num_vals*sizeof(float), cudaMemcpyHostToDevice);
     
 
     // Compute in GPU
