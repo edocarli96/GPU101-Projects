@@ -3,7 +3,9 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <assert.h>
 #include <cura_runtime.h>
+#include <cusparse.h>
 
 double get_time() // function to get the time of day in seconds
 {
@@ -154,7 +156,7 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
         sum=A[i][j]*X[j];*/
         if (i!=j) // avoid diagonal elements
             sum += values[j] * sol[j]; // values pointers must be fixxed
-        sol[i]=(b[i]-sum)/matrixDiagonal[i];
+        sol[i]=(b[clo_ind[i]]-sum)/matrixDiagonal[i];
     }
 
 }
