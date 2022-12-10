@@ -159,9 +159,8 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
         for(int j = row_start; j < row_end; j++)
             if (i!=j) // avoid diagonal elements
                 sum += values[j] * sol[j]; // values pointers must be fixxed
-            sol[i]=(b[clo_ind[i]]-sum)/matrixDiagonal[i];
+            sol[i]=(b[col_ind[i]]-sum)/matrixDiagonal[i];
     }
-
 }
 
 
