@@ -4,8 +4,8 @@
 #include <time.h>
 #include <sys/time.h>
 #include <assert.h>
-#include <cura_runtime.h>
-#include <cusparse.h>
+#include <cuda_runtime.h>
+// #include <cusparse.h>
 
 double get_time() // function to get the time of day in seconds
 {
