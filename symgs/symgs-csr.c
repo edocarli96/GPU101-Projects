@@ -147,7 +147,7 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     float sol[num_rows];
-    float sum=0;
+    float sum=0; // sum of all previous values
 
     if (i<num_rows)
     {
@@ -156,10 +156,11 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
         //Jacobi method
         /*X[i]=(b[i]-sum)/A[i][i];
         sum=A[i][j]*X[j];*/
-        for(int j = row_start; j < row_end; j++)
+        for(int j = row_start; j < row_end; j++){
             if (i!=j) // avoid diagonal elements
                 sum += values[j] * sol[j]; // values pointers must be fixxed
-            sol[i]=(b[col_ind[i]]-sum)/matrixDiagonal[i];
+            sol[i]=(b[col_ind[j]]-sum)/matrixDiagonal[i];
+        }
     }
 }
 
