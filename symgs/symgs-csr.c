@@ -145,18 +145,21 @@ void symgs_csr_sw(const int *row_ptr, const int *col_ind, const float *values, c
 __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *b, float *matrixDiagonal)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int j = blockIdx.y * blockDim.y + threadIdx.y;
+
     float sol[num_rows];
     float sum=0;
 
-    if (i<num_rows-1)
+    if (i<num_rows)
     {
+        const int row_start = row_ptr[i];
+        const int row_end = row_ptr[i + 1];
         //Jacobi method
         /*X[i]=(b[i]-sum)/A[i][i];
         sum=A[i][j]*X[j];*/
-        if (i!=j) // avoid diagonal elements
-            sum += values[j] * sol[j]; // values pointers must be fixxed
-        sol[i]=(b[clo_ind[i]]-sum)/matrixDiagonal[i];
+        for(int j = row_start; j < row_end; j++)
+            if (i!=j) // avoid diagonal elements
+                sum += values[j] * sol[j]; // values pointers must be fixxed
+            sol[i]=(b[clo_ind[i]]-sum)/matrixDiagonal[i];
     }
 
 }
