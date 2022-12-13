@@ -215,8 +215,6 @@ int main(int argc, const char *argv[])
 
     // inputs to move from RAM to VRAM
     // device=GPU
-    int d_row_ptr[num_rows+1], d_col_ind[num_vals];
-    float d_values[num_vals], d_matrixDiagonal[num_rows];
     cudaMemcpy(d_row_ptr, row_ptr, (num_rows+1)*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_col_ind, col_ind, num_vals*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_values, values, num_vals*sizeof(float), cudaMemcpyHostToDevice);
