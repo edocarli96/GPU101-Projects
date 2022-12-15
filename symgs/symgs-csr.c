@@ -205,11 +205,11 @@ int main(int argc, const char *argv[])
     // device memory allocation
     int *d_row_ptr, *d_col_ind;
     float *d_values, *d_matrixDiagonal, *d_x, *h_x;
-    cudaMallocManaged(&d_row_ptr ,(*num_rows + 1) * sizeof(int));
-    cudaMallocManaged(&d_col_ind ,(*num_vals * sizeof(int)));
-    cudaMallocManaged(&d_values ,(*num_vals * sizeof(float)));
-    cudaMallocManaged(&d_matrixDiagonal ,(*num_rows * sizeof(float)));
-    cudaMallocManaged(&d_x ,(*num_rows * sizeof(float)));
+    cudaMallocManaged(&d_row_ptr ,(num_rows + 1) * sizeof(int));
+    cudaMallocManaged(&d_col_ind ,(num_vals * sizeof(int)));
+    cudaMallocManaged(&d_values ,(num_vals * sizeof(float)));
+    cudaMallocManaged(&d_matrixDiagonal ,(num_rows * sizeof(float)));
+    cudaMallocManaged(&d_x ,(num_rows * sizeof(float)));
     // vector where to store gpu compilation results
     // h_b = (float *)malloc(num_rows * sizeof(float));
 
