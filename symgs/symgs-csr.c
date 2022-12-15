@@ -227,7 +227,7 @@ int main(int argc, const char *argv[])
     start_gpu = get_time();
     // kernel invocation
     dim3 threadsPerBlock(256);
-    dim3 numBlocks(N / threadsPerBlock.x, N / threadsPerBlock.y);
+    dim3 numBlocks(num_vals / threadsPerBlock.x, num_vals / threadsPerBlock.y);
     symgsGPU<<<threadsPerBlock, numBlocks>>>(d_row_ptr, d_col_ind, d_values, num_rows, d_x, d_matrixDiagonal);
     cudaDeviceSynchronize();
     end_gpu = get_time();
