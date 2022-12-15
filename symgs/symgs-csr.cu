@@ -143,11 +143,10 @@ void symgs_csr_sw(const int *row_ptr, const int *col_ind, const float *values, c
 }
 
 // GPU implementation of SYMGS
-__global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *b, float *matrixDiagonal)
+__global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *values, const int num_rows, float *d_x, float *matrixDiagonal)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    float sol[num_rows];
     float sum=0; // sum of all previous values
 
     if (i<num_rows)
@@ -159,8 +158,8 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
         sum=A[i][j]*X[j];*/
         for(int j = row_start; j < row_end; j++){
             if (i!=j) // avoid diagonal elements
-                sum += values[j] * sol[j]; // values pointers must be fixxed
-            sol[i]=(b[col_ind[j]]-sum)/matrixDiagonal[i];
+                sum += values[j] * d_x[j]; // values pointers must be fixxed
+            d_x[i]=(d_X[col_ind[j]]-sum)/matrixDiagonal[i];
         }
     }
 }
@@ -204,7 +203,7 @@ int main(int argc, const char *argv[])
     
     // device memory allocation
     int *d_row_ptr, *d_col_ind;
-    float *d_values, *d_matrixDiagonal, *d_x, *h_x;
+    float *d_values, *d_matrixDiagonal, *d_x;
     cudaMallocManaged(&d_row_ptr ,(num_rows + 1) * sizeof(int));
     cudaMallocManaged(&d_col_ind ,(num_vals * sizeof(int)));
     cudaMallocManaged(&d_values ,(num_vals * sizeof(float)));
