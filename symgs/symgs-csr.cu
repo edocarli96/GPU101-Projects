@@ -19,7 +19,6 @@ double get_time() // function to get the time of day in seconds
 void read_matrix(int **row_ptr, int **col_ind, float **values, float **matrixDiagonal, const char *filename, int *num_rows, int *num_cols, int *num_vals)
 {
     //verify if the file can be opened
-    int err;
     FILE *file = fopen(filename, "r");
     if (file == NULL)
     {
@@ -159,7 +158,7 @@ __global__ void symgsGPU(const int *row_ptr, const int *col_ind, const float *va
         for(int j = row_start; j < row_end; j++){
             if (i!=j) // avoid diagonal elements
                 sum += values[j] * d_x[j]; // values pointers must be fixxed
-            d_x[i]=(d_X[col_ind[j]]-sum)/matrixDiagonal[i];
+            d_x[i]=((d_x[j]-sum)/matrixDiagonal[i]);
         }
     }
 }
