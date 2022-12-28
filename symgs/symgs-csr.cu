@@ -236,7 +236,7 @@ int main(int argc, const char *argv[])
 
     // Print time
     printf("SYMGS Time CPU: %.10lf\n", end_cpu - start_cpu);
-    printf("SYMGS Time CPU: %.10lf\n", end_gpu - start_gpu);
+    printf("SYMGS Time GPU: %.10lf\n", end_gpu - start_gpu);
 
  // Free host memory
     free(row_ptr);
