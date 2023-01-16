@@ -233,10 +233,20 @@ int main(int argc, const char *argv[])
     //copy back data from VRAM to RAM
     cudaMemcpy(h_x, d_x, (num_rows+1)*sizeof(int), cudaMemcpyDeviceToHost);
 
-
     // Print time
     printf("SYMGS Time CPU: %.10lf\n", end_cpu - start_cpu);
     printf("SYMGS Time GPU: %.10lf\n", end_gpu - start_gpu);
+    
+    //very if the output is correct, can be done with cuda too
+    double delta=0;
+    for(int i=0; i<num_rows; i++)
+    {
+        delta=d_x[i]-x[i];
+        
+    }
+    if (delta<1)
+        printf("correct result\n");
+    
 
  // Free host memory
     free(row_ptr);
